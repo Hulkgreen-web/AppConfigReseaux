@@ -20,7 +20,7 @@ def decoupage_classique(adresse_ip, masque_pointee, nombre_sr):
     Réalise un découpage classique en sous-réseaux de taille identique
 
     :param adresse_ip: Adresse IP du réseau (notation pointée)
-    :param masque: Masque de réseau (notation CIDR)
+    :param masque_pointee: Masque de réseau (notation pointée)
     :param nombre_sr: Nombre de sous-réseaux souhaités
     """
 
@@ -67,30 +67,3 @@ def generer_plan_adressage_classique(adresse_ip, masque, nombre_sr):
         }
 
     return plan_adressage
-
-
-# Exemple d'utilisation
-def main():
-    # Paramètres de configuration
-    adresse_ip = "192.168.1.0"  # Réseau principal
-    masque = "255.255.255.0"  # Masque /24
-    nombre_sr = 8  # Nombre de sous-réseaux souhaités
-
-    try:
-        # Générer le plan d'adressage
-        plan = generer_plan_adressage_classique(adresse_ip, masque, nombre_sr)
-
-        # Afficher le plan d'adressage
-        print("Plan d'adressage des sous-réseaux (découpage classique) :")
-        for sr, details in plan.items():
-            print(f"\n{sr}:")
-            for cle, valeur in details.items():
-                print(f"  {cle}: {valeur}")
-
-    except ValueError as e:
-        print(f"Erreur : {e}")
-
-
-# Exécution du script
-if __name__ == "__main__":
-    main()
