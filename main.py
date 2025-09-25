@@ -1,8 +1,10 @@
 import tkinter as tk
-from tkinter import messagebox
+from ttkthemes import ThemedTk
+from tkinter import ttk, messagebox
 import math
 import ipaddress
-#partie 3
+
+# --- Fonctions de calcul ---
 def nb_bits_necessaires(valeur):
     return math.ceil(math.log2(valeur))
 
@@ -34,7 +36,7 @@ def verifier_decoupe_classique(ip_reseau, masque, nb_sr=None, nb_ips_par_sr=None
         return True, f"Possible : on peut faire {nb_sr_possibles} sous-réseaux."
     else:
         return False, "Erreur : il faut spécifier nb_sr ou nb_ips_par_sr."
-#partie 5
+
 def verifier_vlsm_possible(ip_reseau, masque, besoins_ips):
     try:
         reseau = ipaddress.IPv4Network(f"{ip_reseau}/{masque}", strict=False)
@@ -55,7 +57,7 @@ def verifier_vlsm_possible(ip_reseau, masque, besoins_ips):
     else:
         return False, f"Impossible : total utilisé = {total_utilise}, total dispo = {nb_ips_total}"
 
-# --- Interface Tkinter ---
+# --- Interface graphique ---
 def calculer_classique():
     ip = entry_ip.get()
     masque = entry_masque.get()
@@ -94,52 +96,54 @@ def calculer_vlsm():
     else:
         messagebox.showerror("Erreur", msg)
 
-root = tk.Tk()
+# --- Fenêtre principale avec thème et fond ---
+root = ThemedTk(theme="arc")
 root.title("Outil de découpe réseau")
+root.geometry("500x450")
+root.configure(bg="#cce0ff")  # Bleu plus foncé
+
+# --- Style des champs de saisie ---
+entry_style = {"background": "#f0f0f0"}  # Gris clair
 
 # --- Découpe classique ---
-frame1 = tk.LabelFrame(root, text="Découpe classique", padx=10, pady=10)
+frame1 = ttk.LabelFrame(root, text="Découpe classique", padding=10)
 frame1.pack(padx=10, pady=10, fill="x")
 
-tk.Label(frame1, text="Adresse IP de base :").grid(row=0, column=0, sticky="e")
-entry_ip = tk.Entry(frame1)
+ttk.Label(frame1, text="Adresse IP de base :").grid(row=0, column=0, sticky="e")
+entry_ip = tk.Entry(frame1, **entry_style)
 entry_ip.grid(row=0, column=1)
 
-tk.Label(frame1, text="Masque (ex: 24 ou 255.255.255.0) :").grid(row=1, column=0, sticky="e")
-entry_masque = tk.Entry(frame1)
+ttk.Label(frame1, text="Masque (ex: 24 ou 255.255.255.0) :").grid(row=1, column=0, sticky="e")
+entry_masque = tk.Entry(frame1, **entry_style)
 entry_masque.grid(row=1, column=1)
 
 var_choix = tk.IntVar(value=1)
-radio_sr = tk.Radiobutton(frame1, text="Nombre de sous-réseaux", variable=var_choix, value=1)
-radio_sr.grid(row=2, column=0, sticky="w")
-entry_nb_sr = tk.Entry(frame1)
+ttk.Radiobutton(frame1, text="Nombre de sous-réseaux", variable=var_choix, value=1).grid(row=2, column=0, sticky="w")
+entry_nb_sr = tk.Entry(frame1, **entry_style)
 entry_nb_sr.grid(row=2, column=1)
 
-radio_ips = tk.Radiobutton(frame1, text="Nombre d'IPs par SR", variable=var_choix, value=2)
-radio_ips.grid(row=3, column=0, sticky="w")
-entry_nb_ips = tk.Entry(frame1)
+ttk.Radiobutton(frame1, text="Nombre d'IPs par SR", variable=var_choix, value=2).grid(row=3, column=0, sticky="w")
+entry_nb_ips = tk.Entry(frame1, **entry_style)
 entry_nb_ips.grid(row=3, column=1)
 
-btn_classique = tk.Button(frame1, text="Vérifier", command=calculer_classique)
-btn_classique.grid(row=4, column=0, columnspan=2, pady=5)
+ttk.Button(frame1, text="Vérifier", command=calculer_classique).grid(row=4, column=0, columnspan=2, pady=5)
 
 # --- VLSM ---
-frame2 = tk.LabelFrame(root, text="Vérification VLSM", padx=10, pady=10)
+frame2 = ttk.LabelFrame(root, text="Vérification VLSM", padding=10)
 frame2.pack(padx=10, pady=10, fill="x")
 
-tk.Label(frame2, text="Adresse IP de base :").grid(row=0, column=0, sticky="e")
-entry_ip_vlsm = tk.Entry(frame2)
+ttk.Label(frame2, text="Adresse IP de base :").grid(row=0, column=0, sticky="e")
+entry_ip_vlsm = tk.Entry(frame2, **entry_style)
 entry_ip_vlsm.grid(row=0, column=1)
 
-tk.Label(frame2, text="Masque (ex: 24 ou 255.255.255.0) :").grid(row=1, column=0, sticky="e")
-entry_masque_vlsm = tk.Entry(frame2)
+ttk.Label(frame2, text="Masque (ex: 24 ou 255.255.255.0) :").grid(row=1, column=0, sticky="e")
+entry_masque_vlsm = tk.Entry(frame2, **entry_style)
 entry_masque_vlsm.grid(row=1, column=1)
 
-tk.Label(frame2, text="Besoins en IPs par SR (ex: 50,20,10) :").grid(row=2, column=0, sticky="e")
-entry_besoins = tk.Entry(frame2)
+ttk.Label(frame2, text="Besoins en IPs par SR (ex: 50,20,10) :").grid(row=2, column=0, sticky="e")
+entry_besoins = tk.Entry(frame2, **entry_style)
 entry_besoins.grid(row=2, column=1)
 
-btn_vlsm = tk.Button(frame2, text="Vérifier VLSM", command=calculer_vlsm)
-btn_vlsm.grid(row=3, column=0, columnspan=2, pady=5)
+ttk.Button(frame2, text="Vérifier VLSM", command=calculer_vlsm).grid(row=3, column=0, columnspan=2, pady=5)
 
 root.mainloop()
