@@ -1,4 +1,7 @@
 import ipaddress
+import math
+from logging import raiseExceptions
+
 
 #"str" pour string car les données rentrée par l'utilisateur sont des string
 #classless par defaut si pas précisé par l'utilisateur
@@ -20,11 +23,18 @@ def calculate_network_info(ip_str, mask_str, mode='classless'):
         elif mode == 'classful':
             ip = ipaddress.ip_address(ip_str)
             first_octet = int(ip_str.split('.')[0])
-            mask = 8 if 0 <= first_octet <= 127 else 16 if 128 <= first_octet <= 191 else 24
+            if 0 <= first_octet <= 127:
+                mask = 8
+            elif 128 <= first_octet <= 191:
+                mask = 16
+            elif 192 <= first_octet <= 223:
+                mask = 24
+            else:
+                raise ValueError("Le masque est invalide pour les classes D/E")
             network = ipaddress.ip_network(f"{ip_str}/{mask}", strict=False)
 
         else:
-            return {"erreur": "Mode invalide : 'classless' ou 'classful' attendu"}
+             return {"erreur": "Mode invalide : 'classless' ou 'classful' attendu"}
 
         result = {
             'adresse réseau': str(network.network_address),
@@ -43,7 +53,7 @@ def calculate_network_info(ip_str, mask_str, mode='classless'):
             result['subnet'] = f"{str(network.network_address)}/{network.prefixlen}"
         return result
     except ValueError as e:
-        return {"error": f"IP ou masque invalide : {e}"}
+        raise ValueError(e)
 
 
 #Point 2
@@ -85,6 +95,7 @@ if __name__ == "__main__":
     print(calculate_network_info("192.168.1.100", "24", "classless"))
     print(calculate_network_info("10.0.0.1", "16", "classful"))  # Masque ignoré, classe A
     print(calculate_network_info("999.999.999.999", "24", "classless"))  # Erreur
+    print(calculate_network_info("224.168.1.100", "24", "classful"))
 
     print("\n=== Point 2 ===")
     print(check_ip_belongs("192.168.1.50", "192.168.1.0", "24", "classless"))
