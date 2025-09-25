@@ -48,16 +48,30 @@ def calculate_network_info(ip_str, mask_str, mode='classless'):
 
 #Point 2
 def check_ip_belongs(ip_to_check, network_ip, mask_str, mode='classless'):
-
     try:
-        network = calculate_network_info(network_ip, mask_str, mode)  # Réutilise point 1 pour parser
+        # Réutilise la fonction calculate_network_info pour obtenir les informations de base
+        network = calculate_network_info(network_ip, mask_str, mode)
         if 'error' in network:
             return network
-        network_obj = ipaddress.ip_network(f"{network_ip}/{mask_str}", strict=False) if mode == 'classless' else \
-                      ipaddress.ip_network(f"{network_ip}/{8 if int(network_ip.split('.')[0]) <= 127 else 16 if int(network_ip.split('.')[0]) <= 191 else 24}", strict=False)
+
+        # Détermine l'objet réseau en fonction du mode
+        if mode == 'classless':
+            network_obj = ipaddress.ip_network(f"{network_ip}/{mask_str}", strict=False)
+        else:  # mode == 'classful'
+            first_octet = int(network_ip.split('.')[0])
+            if 0 <= first_octet <= 127:
+                mask = 8
+            elif 128 <= first_octet <= 191:
+                mask = 16
+            else:  # 192 <= first_octet <= 223
+                mask = 24
+            network_obj = ipaddress.ip_network(f"{network_ip}/{mask}", strict=False)
+
+        # Vérifie l'appartenance de l'IP et calcule les hôtes
         ip = ipaddress.ip_address(ip_to_check)
         belongs = ip in network_obj
         hosts = list(network_obj.hosts())
+
         return {
             'appartient': belongs,
             'premier hote': str(hosts[0]) if hosts else "Aucun hôte",
@@ -65,7 +79,6 @@ def check_ip_belongs(ip_to_check, network_ip, mask_str, mode='classless'):
         }
     except ValueError as e:
         return {"error": f"IP ou masque invalide : {e}"}
-
 # Tests statiques
 if __name__ == "__main__":
     print("=== Point 1 ===")

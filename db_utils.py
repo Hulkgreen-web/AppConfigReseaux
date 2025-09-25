@@ -5,9 +5,7 @@ DB_FILE = 'network_admin.db'  # Nom du fichier de la base de données
 
 
 def create_db():
-    """
-    Crée la base de données et les tables nécessaires.
-    """
+
     con = sqlite3.connect(DB_FILE)
     cur = con.cursor()
 
@@ -37,7 +35,7 @@ def create_db():
 
 #hashage du mdp pour la sécurité
 def hash_password(password):
-
+    #.encode convertis le mot de passe en octet binaire car la librairie hash du binaire
     return hashlib.sha256(password.encode()).hexdigest()
 
 #on ajoute un utilisateur avec le mdp hashé
@@ -46,8 +44,7 @@ def add_user(username, password):
     con = sqlite3.connect(DB_FILE)
     cur = con.cursor()
     try:
-        cur.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)',
-                    (username, hash_password(password)))
+        cur.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)',(username, hash_password(password)))
         con.commit()
         print(f"Utilisateur '{username}' ajouté !")
     except sqlite3.IntegrityError:
