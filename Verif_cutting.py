@@ -23,7 +23,7 @@ def verifier_decoupe_classique(ip_reseau, masque, nb_sr=None, nb_ips_par_sr=None
         if bits_sr > bits_disponibles:
             return False, "Impossible : pas assez de bits pour ce nombre de sous-réseaux."
         bits_hotes = bits_disponibles - bits_sr
-        nb_ips = 2 ** bits_hotes - 2
+        nb_ips = pow(2,bits_hotes) - 2
         return True, f"Possible : chaque SR aura {nb_ips} IPs utilisables."
     elif nb_ips_par_sr is not None:
         if nb_ips_par_sr <= 0:
@@ -32,7 +32,7 @@ def verifier_decoupe_classique(ip_reseau, masque, nb_sr=None, nb_ips_par_sr=None
         if bits_hotes > bits_disponibles:
             return False, "Impossible : pas assez de bits pour ce nombre d'IPs par SR."
         bits_sr = bits_disponibles - bits_hotes
-        nb_sr_possibles = 2 ** bits_sr
+        nb_sr_possibles = pow(2,bits_sr)
         return True, f"Possible : on peut faire {nb_sr_possibles} sous-réseaux."
     else:
         return False, "Erreur : il faut spécifier nb_sr ou nb_ips_par_sr."

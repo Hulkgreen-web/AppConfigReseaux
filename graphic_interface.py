@@ -7,12 +7,15 @@ class SubnetCalculatorApp:
     def __init__(self, master):
         self.master = master
         master.title("Calculateur de Sous-Réseaux")
-        master.geometry("900x600")
+        master.geometry("1250x720")
         master.resizable(False, False)
         master.configure(background="#fcba03")
 
         frame_style = ttk.Style()
         frame_style.configure("TFrame", background="#fcba03")
+
+        button_style = ttk.Style()
+        button_style.configure("TButton", bg="#ba0404", font=("Arial", 15))
 
         # Frame pour les entrées
         input_frame = ttk.Frame(master, style="TFrame", padding="10")
@@ -22,20 +25,20 @@ class SubnetCalculatorApp:
         master.iconbitmap("ressources/logo.ico")
 
         # Adresse IP
-        ttk.Label(input_frame, text="Adresse IP:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        self.ip_entry = ttk.Entry(input_frame, width=20)
+        ttk.Label(input_frame, text="Adresse IP:", font=("arial",15),background="#ba0404", foreground="white").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
+        self.ip_entry = ttk.Entry(input_frame, width=20, font=("arial", 15))
         self.ip_entry.grid(row=0, column=1, padx=5, pady=5)
         self.ip_entry.insert(0, "50.0.0.0")
 
         # Masque
-        ttk.Label(input_frame, text="Masque:").grid(row=0, column=2, sticky=tk.W, padx=5, pady=5)
-        self.masque_entry = ttk.Entry(input_frame, width=20)
+        ttk.Label(input_frame, text="Masque:", font=("arial",15),background="#ba0404", foreground="white").grid(row=0, column=2, sticky=tk.W, padx=5, pady=5)
+        self.masque_entry = ttk.Entry(input_frame, width=20, font=("arial", 15))
         self.masque_entry.grid(row=0, column=3, padx=5, pady=5)
         self.masque_entry.insert(0, "255.0.0.0")
 
         # Nombre de sous-réseaux
-        ttk.Label(input_frame, text="Nombre de Sous-Réseaux:").grid(row=0, column=4, sticky=tk.W, padx=5, pady=5)
-        self.sr_entry = ttk.Entry(input_frame, width=10)
+        ttk.Label(input_frame, text="Nombre de Sous-Réseaux:", font=("arial",15),background="#ba0404", foreground="white").grid(row=0, column=4, sticky=tk.W, padx=5, pady=5)
+        self.sr_entry = ttk.Entry(input_frame, width=10, font=("arial", 15))
         self.sr_entry.grid(row=0, column=5, padx=5, pady=5)
         self.sr_entry.insert(0, "12")
 
@@ -72,9 +75,12 @@ class SubnetCalculatorApp:
 
         # Configurer la largeur des colonnes
         for col in self.tree["columns"]:
-            self.tree.column(col, width=120, anchor=tk.CENTER)
+            self.tree.column(col, width=200, anchor=tk.CENTER)
 
         self.tree.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+        btn_main_menu = ttk.Button(master, text="Retour au menu principal", command=self.open_main_menu)
+        btn_main_menu.pack(padx=10, pady=10)
 
     def calculer_sous_reseaux(self):
         # Effacer les résultats précédents
@@ -109,13 +115,11 @@ class SubnetCalculatorApp:
             messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
 
 
-def main():
-    root = tk.Tk()
-    app = SubnetCalculatorApp(root)
-    root.mainloop()
+    def open_main_menu(self):
+        from menu_principal import MenuPrincipal
 
-
-if __name__ == "__main__":
-    main()
+        self.master.withdraw()
+        new_window = tk.Toplevel(self.master)
+        MenuPrincipal(new_window)
 
 
