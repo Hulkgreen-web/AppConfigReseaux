@@ -78,6 +78,11 @@ class VerificateurDecoupe:
             ok, msg = verifier_decoupe_classique(ip, masque, nb_ips_par_sr=nb_ips)
         if ok:
             messagebox.showinfo("Résultat", msg)
+            reponse = messagebox.askyesno("Proposition de découpe","Voulez-vous effectuer la découpe classique ?")
+            if reponse:
+                self.open_graphic_interface(ip, masque, nb_sr=nb_sr)
+            else:
+                messagebox.showinfo("Annulation de découpe","Découpe classique annulée")
         else:
             messagebox.showerror("Erreur", msg)
 
@@ -102,3 +107,12 @@ class VerificateurDecoupe:
         self.master.withdraw()
         new_window = tk.Toplevel(self.master)
         MenuPrincipal(new_window)
+
+    def open_graphic_interface(self,ip_address,masque,nb_sr):
+        # import local de la classe pour éviter
+        # les problèmes d'import circulaire
+        from graphic_interface import SubnetCalculatorApp
+
+        self.master.withdraw()
+        new_window = tk.Toplevel(self.master)
+        SubnetCalculatorApp(new_window,ip_address,masque,nb_sr)

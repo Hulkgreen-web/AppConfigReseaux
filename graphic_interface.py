@@ -4,8 +4,11 @@ from subnet import generer_plan_adressage_classique
 
 
 class SubnetCalculatorApp:
-    def __init__(self, master):
+    def __init__(self, master,ip_address,masque,nb_sr):
         self.master = master
+        self.ip_address = ip_address
+        self.masque = masque
+        self.nb_sr = nb_sr
         master.title("Calculateur de Sous-Réseaux")
         master.geometry("1250x720")
         master.resizable(False, False)
@@ -28,19 +31,19 @@ class SubnetCalculatorApp:
         ttk.Label(input_frame, text="Adresse IP:", font=("arial",15),background="#ba0404", foreground="white").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
         self.ip_entry = ttk.Entry(input_frame, width=20, font=("arial", 15))
         self.ip_entry.grid(row=0, column=1, padx=5, pady=5)
-        self.ip_entry.insert(0, "50.0.0.0")
+        self.ip_entry.insert(0, self.ip_address)
 
         # Masque
         ttk.Label(input_frame, text="Masque:", font=("arial",15),background="#ba0404", foreground="white").grid(row=0, column=2, sticky=tk.W, padx=5, pady=5)
         self.masque_entry = ttk.Entry(input_frame, width=20, font=("arial", 15))
         self.masque_entry.grid(row=0, column=3, padx=5, pady=5)
-        self.masque_entry.insert(0, "255.0.0.0")
+        self.masque_entry.insert(0, self.masque)
 
         # Nombre de sous-réseaux
         ttk.Label(input_frame, text="Nombre de Sous-Réseaux:", font=("arial",15),background="#ba0404", foreground="white").grid(row=0, column=4, sticky=tk.W, padx=5, pady=5)
         self.sr_entry = ttk.Entry(input_frame, width=10, font=("arial", 15))
         self.sr_entry.grid(row=0, column=5, padx=5, pady=5)
-        self.sr_entry.insert(0, "12")
+        self.sr_entry.insert(0, self.nb_sr)
 
         # Bouton de calcul
         ttk.Button(input_frame, text="Calculer", command=self.calculer_sous_reseaux).grid(row=0, column=6, padx=5,
