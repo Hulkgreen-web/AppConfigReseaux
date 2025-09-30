@@ -33,12 +33,12 @@ class VerificateurDecoupe:
 
         self.var_choix = tk.IntVar(value=1)
         ttk.Radiobutton(frame1, text="Nombre de sous-réseaux", variable=self.var_choix, value=1).grid(row=2, column=0,
-                                                                                                 sticky="w")
+                                                                                                      sticky="w")
         self.entry_nb_sr = tk.Entry(frame1, **entry_style)
         self.entry_nb_sr.grid(row=2, column=1)
 
         ttk.Radiobutton(frame1, text="Nombre d'IPs par SR", variable=self.var_choix, value=2).grid(row=3, column=0,
-                                                                                              sticky="w")
+                                                                                                   sticky="w")
         self.entry_nb_ips = tk.Entry(frame1, **entry_style)
         self.entry_nb_ips.grid(row=3, column=1)
 
@@ -62,6 +62,7 @@ class VerificateurDecoupe:
 
         ttk.Button(frame2, text="Vérifier VLSM", command=self.calculer_vlsm).grid(row=3, column=0, columnspan=2, pady=5)
         ttk.Button(master, text="Retour au menu principal", command=self.open_main_menu).pack(side="bottom")
+
     # --- Interface graphique ---
     def calculer_classique(self):
         ip = self.entry_ip.get()
@@ -83,6 +84,11 @@ class VerificateurDecoupe:
             ok, msg = verifier_decoupe_classique(ip, masque, nb_ips_par_sr=nb_ips)
         if ok:
             messagebox.showinfo("Résultat", msg)
+            reponse = messagebox.askyesno("Proposition de découpe", "Voulez-vous effectuer la découpe classique ?")
+            if reponse:
+                self.open_graphic_interface(ip, masque, nb_sr=nb_sr)
+            else:
+                messagebox.showinfo("Annulation de découpe", "Découpe classique annulée")
         else:
             messagebox.showerror("Erreur", msg)
 
@@ -107,3 +113,12 @@ class VerificateurDecoupe:
         self.master.withdraw()
         new_window = tk.Toplevel(self.master)
         MenuPrincipal(new_window)
+
+    def open_graphic_interface(self, ip_address, masque, nb_sr):
+        # import local de la classe pour éviter
+        # les problèmes d'import circulaire
+        from graphic_interface import SubnetCalculatorApp
+
+        self.master.withdraw()
+        new_window = tk.Toplevel(self.master)
+        SubnetCalculatorApp(new_window, ip_address, masque, nb_sr)
