@@ -4,6 +4,7 @@ class MenuPrincipal:
     def __init__(self, master):
         self.master = master
         self.master.geometry("1080x720")
+        self.master.title("Menu principal")
         self.master.resizable(False, False)
         self.master.configure(background="#fcba03")
 
@@ -30,8 +31,8 @@ class MenuPrincipal:
     def open_graphic_interface(self):
         # import local de la classe pour éviter
         # les problèmes d'import circulaire
-        from graphic_interface import SubnetCalculatorApp
+        from Verif_cutting_interface import VerificateurDecoupe
 
         self.master.withdraw()
         new_window = Toplevel(self.master)
-        SubnetCalculatorApp(new_window)
+        VerificateurDecoupe(new_window)
