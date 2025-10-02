@@ -3,7 +3,6 @@
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
-
 #Cache Files
 __pycache__/
 
