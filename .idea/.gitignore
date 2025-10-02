@@ -3,3 +3,11 @@
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
+#Cache Files
+__pycache__/
+
+#Autres fichiers
+AppConfigReseaux.iml
+misc.xml
+modules.xml
+vcs.xml
