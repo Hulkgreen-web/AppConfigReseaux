@@ -8,32 +8,29 @@ class VerificateurDecoupe:
         # --- Fenêtre principale avec thème et fond ---
         master.title("Outil de découpe réseau")
         master.geometry("500x450")
-        master.configure(bg="#cce0ff")  # Bleu plus foncé
-
-        # --- Style des champs de saisie ---
-        entry_style = {"background": "#f0f0f0"}  # Gris clair
+        master.configure(bg="#989a9e")
 
         # --- Découpe classique ---
-        frame1 = ttk.LabelFrame(master, text="Découpe classique", padding=10)
+        frame1 = ttk.LabelFrame(master, text="Découpe classique", padding=10,)
         frame1.pack(padx=10, pady=10, fill="x")
 
-        ttk.Label(frame1, text="Adresse IP de base :").grid(row=0, column=0, sticky="e")
-        self.entry_ip = tk.Entry(frame1, **entry_style)
+        ttk.Label(frame1, text="Adresse IP de base :", font=("arial",15)).grid(row=0, column=0, sticky="e")
+        self.entry_ip = tk.Entry(frame1, )
         self.entry_ip.grid(row=0, column=1)
 
-        ttk.Label(frame1, text="Masque (ex: 24 ou 255.255.255.0) :").grid(row=1, column=0, sticky="e")
-        self.entry_masque = tk.Entry(frame1, **entry_style)
+        ttk.Label(frame1, text="Masque (ex: 24 ou 255.255.255.0) :", font=("arial",15)).grid(row=1, column=0, sticky="e")
+        self.entry_masque = tk.Entry(frame1, )
         self.entry_masque.grid(row=1, column=1)
 
         self.var_choix = tk.IntVar(value=1)
         ttk.Radiobutton(frame1, text="Nombre de sous-réseaux", variable=self.var_choix, value=1).grid(row=2, column=0,
                                                                                                  sticky="w")
-        self.entry_nb_sr = tk.Entry(frame1, **entry_style)
+        self.entry_nb_sr = tk.Entry(frame1, )
         self.entry_nb_sr.grid(row=2, column=1)
 
         ttk.Radiobutton(frame1, text="Nombre d'IPs par SR", variable=self.var_choix, value=2).grid(row=3, column=0,
                                                                                               sticky="w")
-        self.entry_nb_ips = tk.Entry(frame1, **entry_style)
+        self.entry_nb_ips = tk.Entry(frame1, )
         self.entry_nb_ips.grid(row=3, column=1)
 
         ttk.Button(frame1, text="Vérifier", command=self.calculer_classique).grid(row=4, column=0, columnspan=2, pady=5)
@@ -43,15 +40,15 @@ class VerificateurDecoupe:
         frame2.pack(padx=10, pady=10, fill="x")
 
         ttk.Label(frame2, text="Adresse IP de base :").grid(row=0, column=0, sticky="e")
-        self.entry_ip_vlsm = tk.Entry(frame2, **entry_style)
+        self.entry_ip_vlsm = tk.Entry(frame2, )
         self.entry_ip_vlsm.grid(row=0, column=1)
 
         ttk.Label(frame2, text="Masque (ex: 24 ou 255.255.255.0) :").grid(row=1, column=0, sticky="e")
-        self.entry_masque_vlsm = tk.Entry(frame2, **entry_style)
+        self.entry_masque_vlsm = tk.Entry(frame2, )
         self.entry_masque_vlsm.grid(row=1, column=1)
 
         ttk.Label(frame2, text="Besoins en IPs par SR (ex: 50,20,10) :").grid(row=2, column=0, sticky="e")
-        self.entry_besoins = tk.Entry(frame2, **entry_style)
+        self.entry_besoins = tk.Entry(frame2, )
         self.entry_besoins.grid(row=2, column=1)
 
         ttk.Button(frame2, text="Vérifier VLSM", command=self.calculer_vlsm).grid(row=3, column=0, columnspan=2, pady=5)
@@ -69,22 +66,31 @@ class VerificateurDecoupe:
                 messagebox.showerror("Erreur", "Nombre de sous-réseaux invalide.")
                 return
             ok, msg = verifier_decoupe_classique(ip, masque, nb_sr=nb_sr)
+            if ok:
+                messagebox.showinfo("Résultat", msg)
+                reponse = messagebox.askyesno("Proposition de découpe", "Voulez-vous effectuer la découpe classique ?")
+                if reponse:
+                    self.open_graphic_interface(ip, masque, nb_sr=nb_sr)
+                else:
+                    messagebox.showinfo("Annulation de découpe", "Découpe classique annulée")
+            else:
+                messagebox.showerror("Erreur", msg)
         else:
             try:
                 nb_ips = int(self.entry_nb_ips.get())
             except:
                 messagebox.showerror("Erreur", "Nombre d'IPs invalide.")
                 return
-            ok, msg = verifier_decoupe_classique(ip, masque, nb_ips_par_sr=nb_ips)
-        if ok:
-            messagebox.showinfo("Résultat", msg)
-            reponse = messagebox.askyesno("Proposition de découpe","Voulez-vous effectuer la découpe classique ?")
-            if reponse:
-                self.open_graphic_interface(ip, masque, nb_sr=nb_sr)
+            ok, msg, nb_sr_possible = verifier_decoupe_classique(ip, masque, nb_ips_par_sr=nb_ips)
+            if ok:
+                messagebox.showinfo("Résultat", msg)
+                reponse = messagebox.askyesno("Proposition de découpe", "Voulez-vous effectuer la découpe classique ?")
+                if reponse:
+                    self.open_graphic_interface(ip, masque, nb_sr=nb_sr_possible)
+                else:
+                    messagebox.showinfo("Annulation de découpe", "Découpe classique annulée")
             else:
-                messagebox.showinfo("Annulation de découpe","Découpe classique annulée")
-        else:
-            messagebox.showerror("Erreur", msg)
+                messagebox.showerror("Erreur", msg)
 
     def calculer_vlsm(self):
         ip = self.entry_ip_vlsm.get()
