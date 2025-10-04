@@ -73,9 +73,34 @@ def hash_password(password):
     return hashed
 
 # Fonction pour vérifier un mot de passe
-def check_password(password, hashed):
+def check_password(username,password):
     # Vérifie si le mot de passe correspond au hash
-    return bcrypt.checkpw(password.encode('utf-8'), hashed)
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT password_hash FROM users WHERE username = ?", (username,))
+        result = cursor.fetchone()
+        return bcrypt.checkpw(password.encode('utf-8'), result[0])
+    except sqlite3.Error as e:
+        print("SQLite error: ", e)
+        return None
+    finally:
+        conn.close()
+
+# Fonction pour récupérer le nom d'utilisateur dans la DB
+def check_username(username):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
+        row = cursor.fetchone()
+        return row[0] if row else None
+    except sqlite3.Error as e:
+        print("SQLite error: ", e)
+        return None
+    finally:
+        conn.close()
+
 
 # Fonction pour ajouter un utilisateur
 def add_user(username, password):
