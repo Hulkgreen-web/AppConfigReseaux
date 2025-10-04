@@ -87,8 +87,10 @@ def add_user(username, password):
         cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', (username, password_hash))
         conn.commit()
         print(f"Utilisateur '{username}' ajouté !")
+        return True
     except sqlite3.IntegrityError:
         print("Erreur : Nom d'utilisateur déjà pris.")
+        return False
     finally:
         conn.close()
 

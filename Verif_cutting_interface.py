@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
 from Verif_cutting import *
+from register_interface import custom_messagebox, askyesno
 
 class VerificateurDecoupe:
     def __init__(self, master):
@@ -63,34 +63,34 @@ class VerificateurDecoupe:
             try:
                 nb_sr = int(self.entry_nb_sr.get())
             except:
-                messagebox.showerror("Erreur", "Nombre de sous-réseaux invalide.")
+                custom_messagebox("Erreur", "Nombre de sous-réseaux invalide.")
                 return
             ok, msg = verifier_decoupe_classique(ip, masque, nb_sr=nb_sr)
             if ok:
-                messagebox.showinfo("Résultat", msg)
-                reponse = messagebox.askyesno("Proposition de découpe", "Voulez-vous effectuer la découpe classique ?")
+                custom_messagebox("Résultat", msg)
+                reponse = askyesno("Proposition de découpe", "Voulez-vous effectuer la découpe classique ?")
                 if reponse:
                     self.open_graphic_interface(ip, masque, nb_sr=nb_sr)
                 else:
-                    messagebox.showinfo("Annulation de découpe", "Découpe classique annulée")
+                    custom_messagebox("Annulation de découpe", "Découpe classique annulée")
             else:
-                messagebox.showerror("Erreur", msg)
+                custom_messagebox("Erreur", msg)
         else:
             try:
                 nb_ips = int(self.entry_nb_ips.get())
             except:
-                messagebox.showerror("Erreur", "Nombre d'IPs invalide.")
+                custom_messagebox("Erreur", "Nombre d'IPs invalide.")
                 return
             ok, msg, nb_sr_possible = verifier_decoupe_classique(ip, masque, nb_ips_par_sr=nb_ips)
             if ok:
-                messagebox.showinfo("Résultat", msg)
-                reponse = messagebox.askyesno("Proposition de découpe", "Voulez-vous effectuer la découpe classique ?")
+                custom_messagebox("Résultat", msg)
+                reponse = askyesno("Proposition de découpe", "Voulez-vous effectuer la découpe classique ?")
                 if reponse:
                     self.open_graphic_interface(ip, masque, nb_sr=nb_sr_possible)
                 else:
-                    messagebox.showinfo("Annulation de découpe", "Découpe classique annulée")
+                    custom_messagebox("Annulation de découpe", "Découpe classique annulée")
             else:
-                messagebox.showerror("Erreur", msg)
+                custom_messagebox("Erreur", msg)
 
     def calculer_vlsm(self):
         ip = self.entry_ip_vlsm.get()
