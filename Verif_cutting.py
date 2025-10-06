@@ -39,7 +39,7 @@ def verifier_decoupe_classique(ip_reseau, masque, nb_sr=None, nb_ips_par_sr=None
 
 def verifier_vlsm_possible(ip_reseau, masque, besoins_ips):
     try:
-        reseau = ipaddress.IPv4Network(f"{ip_reseau}/{masque}", strict=False)
+        reseau = ipaddress.IPv4Network(f"{ip_reseau}{masque}", strict=False)
     except Exception:
         return False, "Erreur : IP ou masque invalide."
 
