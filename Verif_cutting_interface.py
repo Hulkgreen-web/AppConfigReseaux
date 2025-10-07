@@ -3,8 +3,9 @@ from Verif_cutting import *
 from register_interface import custom_messagebox, askyesno
 
 class VerificateurDecoupe:
-    def __init__(self, master):
+    def __init__(self, master,user_id):
         self.master = master
+        self.user_id = user_id
         # --- Fenêtre principale avec thème et fond ---
         master.title("Outil de découpe réseau")
         master.geometry("500x450")
@@ -121,4 +122,4 @@ class VerificateurDecoupe:
 
         self.master.withdraw()
         new_window = tk.Toplevel(self.master)
-        SubnetCalculatorApp(new_window,ip_address,masque,nb_sr)
+        SubnetCalculatorApp(new_window,ip_address,masque,nb_sr,self.user_id)

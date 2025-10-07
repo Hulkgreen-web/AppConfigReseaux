@@ -1,5 +1,7 @@
+import json
 import sqlite3
 import bcrypt
+from typing import Dict, Any
 
 # Fichier de la base de données
 DB_FILE = 'network_admin.db'
@@ -101,6 +103,19 @@ def check_username(username):
     finally:
         conn.close()
 
+def get_user_id(username):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+        row = cursor.fetchone()
+        return row[0] if row else None
+    except sqlite3.Error as e:
+        print("SQLite error: ", e)
+        return None
+    finally:
+        conn.close()
+
 
 # Fonction pour ajouter un utilisateur
 def add_user(username, password):
@@ -116,6 +131,34 @@ def add_user(username, password):
     except sqlite3.IntegrityError:
         print("Erreur : Nom d'utilisateur déjà pris.")
         return False
+    finally:
+        conn.close()
+
+def add_decoupe(user_id, name, data : Dict[int, Any]):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO decoupes (name, data, responsible_id) VALUES (?, ?, ?)",
+                       (name, json.dumps(data, ensure_ascii=False, indent=4), user_id))
+        conn.commit()
+        print(f"Découpe '{name}' ajoutée !")
+        return True
+    except sqlite3.IntegrityError:
+        print(f"Erreur: Une découpe existe déjà avec le nom {name} !")
+        return False
+    finally:
+        conn.close()
+
+
+def get_decoupe_by_name(name):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT data FROM decoupes WHERE name = ?", (name,))
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        return json.loads(row[0])
     finally:
         conn.close()
 

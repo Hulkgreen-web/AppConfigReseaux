@@ -95,7 +95,7 @@ def generer_plan_adressage_classique(adresse_ip, masque, nombre_sr):
         # Calculer le nombre d'hôtes par sous-réseau
         hotes_par_sr = sr.num_addresses - 2  # Soustrait réseau et broadcast
 
-        plan_adressage[f"SR{i}"] = {
+        plan_adressage[i] = {
             "Réseau": str(sr.network_address),
             "Masque": str(sr.netmask),
             "Nombre total d'adresses": hotes_par_sr,

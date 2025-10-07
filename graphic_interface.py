@@ -1,14 +1,16 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from subnet import generer_plan_adressage_classique
+from tkinter import ttk, messagebox, Label
 
+from subnet import generer_plan_adressage_classique
+from db_utils import add_decoupe
 
 class SubnetCalculatorApp:
-    def __init__(self, master,ip_address,masque,nb_sr):
+    def __init__(self, master,ip_address,masque,nb_sr,user_id):
         self.master = master
         self.ip_address = ip_address
         self.masque = masque
         self.nb_sr = nb_sr
+        self.user_id = user_id
         master.title("Calculateur de Sous-Réseaux")
         master.geometry("1250x720")
         master.resizable(False, False)
@@ -88,6 +90,9 @@ class SubnetCalculatorApp:
         btn_main_menu = ttk.Button(master, text="Retour au menu principal", command=self.open_main_menu)
         btn_main_menu.pack(padx=10, pady=10)
 
+        btn_save_decoupe = ttk.Button(master, text="Sauvegarder" ,command=self.save_on_db)
+        btn_save_decoupe.pack(padx=10, pady=10)
+
     def calculer_sous_reseaux(self):
         # Effacer les résultats précédents
         for i in self.tree.get_children():
@@ -103,7 +108,7 @@ class SubnetCalculatorApp:
             plan = generer_plan_adressage_classique(adresse_ip, masque, nombre_sr)
 
             # Remplir le tableau
-            for sr, details in plan.items():
+            for i, details in plan.items():
                 self.tree.insert("", "end", values=(
                     details["Réseau"],
                     details["Masque"],
@@ -113,12 +118,26 @@ class SubnetCalculatorApp:
                     details["Adresse de broadcast"]
                 ))
 
-
         except ValueError as e:
             messagebox.showerror("Erreur", str(e))
 
         except Exception as e:
             messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+
+    def save_on_db(self):
+        try:
+            adresse_ip = self.ip_entry.get()
+            masque = self.masque_entry.get()
+            nombre_sr = int(self.sr_entry.get())
+
+            plan = generer_plan_adressage_classique(adresse_ip, masque, nombre_sr)
+
+            response = custom_popup_entry("Sauvegarde", "Voulez-vous vraiment sauvegarder cette découpe ?")
+
+            if (response is not None):
+                add_decoupe(self.user_id,response,plan)
+        except ValueError as e:
+            messagebox.showerror("Erreur", str(e))
 
 
     def open_main_menu(self):
@@ -126,6 +145,41 @@ class SubnetCalculatorApp:
 
         self.master.withdraw()
         new_window = tk.Toplevel(self.master)
-        MenuPrincipal(new_window)
+        MenuPrincipal(new_window,self.user_id)
+
+def custom_popup_entry(title,message):
+    win = tk.Toplevel()
+    win.title(title)
+    custom_font = ("arial", 20)
+
+    label_message = Label(win, text=message, font=custom_font)
+    label_message.pack(padx=10, pady=10)
+
+    name_entry = ttk.Entry(win, font=custom_font, justify=tk.LEFT)
+    name_entry.pack(padx=10, pady=10)
+
+    result = {"value": None}
+
+    def on_ok():
+        result["value"] = name_entry.get()
+        win.destroy()
+    def on_cancel():
+        result["value"] = None
+        win.destroy()
+
+    btn_frame = ttk.Frame(win)
+    btn_frame.pack(padx=10, pady=10)
+
+    ok_btn = tk.Button(btn_frame, text="OK", command=on_ok, width=10)
+    ok_btn.grid(row=0, column=0, padx=5)
+
+    cancel_btn = tk.Button(btn_frame, text="Annuler", command=on_cancel, width=10)
+    cancel_btn.grid(row=0, column=1, padx=5)
+
+    win.transient()
+    win.grab_set()
+    win.wait_window()
+
+    return result["value"]
 
 

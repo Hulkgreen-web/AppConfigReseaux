@@ -1,5 +1,5 @@
 from tkinter import *
-from db_utils import check_password, check_username
+from db_utils import check_password, check_username, get_user_id
 from register_interface import custom_messagebox
 
 class LoginInterface:
@@ -41,22 +41,22 @@ class LoginInterface:
         password_from_db = check_password(user_from_db, self.password_entry.get())
         if password_from_db:
             custom_messagebox("Connexion effectuée", f"Vous êtes connecté {user_from_db}")
-            self.open_main_menu()
+            self.open_main_menu(user_from_db)
         else:
             custom_messagebox("Mot de passe invalide", "Mot de passe invalide")
 
-    def open_main_menu(self):
+    def open_main_menu(self, user_name):
         from menu_principal import MenuPrincipal
-
+        user_id = get_user_id(user_name)
         self.master.withdraw()
         new_window = Toplevel(self.master)
-        MenuPrincipal(new_window)
+        MenuPrincipal(new_window, user_id)
 
-def main():
+'''def main():
     root = Tk()
     app = LoginInterface(root)
     root.mainloop()
 
 if __name__ == "__main__":
-    main()
+    main()'''
 

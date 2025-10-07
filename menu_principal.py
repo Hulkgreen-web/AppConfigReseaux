@@ -1,8 +1,9 @@
 from tkinter import *
 
 class MenuPrincipal:
-    def __init__(self, master):
+    def __init__(self, master, user_id):
         self.master = master
+        self.user_id = user_id
         self.master.geometry("1080x720")
         self.master.title("Menu principal")
         self.master.resizable(False, False)
@@ -35,4 +36,4 @@ class MenuPrincipal:
 
         self.master.withdraw()
         new_window = Toplevel(self.master)
-        VerificateurDecoupe(new_window)
+        VerificateurDecoupe(new_window,self.user_id)
