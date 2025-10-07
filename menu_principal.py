@@ -4,30 +4,102 @@ class MenuPrincipal:
     def __init__(self, master, user_id):
         self.master = master
         self.user_id = user_id
-        self.master.geometry("1080x720")
-        self.master.title("Menu principal")
-        self.master.resizable(False, False)
-        self.master.configure(background="#989a9e")
 
+        # fenêtre
+        master.geometry("1080x720")
+        master.title("Menu principal")
+        master.resizable(False, False)
+        master.config(bg="#1f2933")  # fond sombre moderne
 
-        label_title = Label(master, text="Bienvenue dans Network Manager !",font=("Arial", 30) , fg="white", bg="#989a9e")
-        label_title.pack(side=TOP, pady=50)
+        # conteneur central
+        card = Frame(master, bg="#f7fafc", bd=0, relief="flat")
+        card.place(relx=0.5, rely=0.5, anchor="center", width=920, height=560)
 
-        btn_frame = Frame(self.master, bg="#989a9e")
+        # en-tête du "card"
+        header = Frame(card, bg="#526787", height=110)
+        header.pack(fill="x")
+        header.pack_propagate(False)
 
-        btn_find_network_information = Button(btn_frame, text="Calculer les caractéristiques réseaux de votre machine", font=("Arial", 20), fg="white", bg="#526787")
-        btn_find_network_information.pack(pady=25, fill=X)
+        title = Label(header, text="Network Manager", bg="#526787", fg="white",
+                         font=("Segoe UI", 28, "bold"))
+        title.pack(side="left", padx=24)
 
-        btn_find_ip_address = Button(btn_frame, text="Vérifier l'appartenance d'une IP à votre réseaux", font=("Arial", 20), fg="white", bg="#526787")
-        btn_find_ip_address.pack(pady=25, fill=X)
+        subtitle = Label(header, text="Outils de diagnostic et découpe réseau", bg="#526787",
+                            fg="#e6eef8", font=("Segoe UI", 12))
+        subtitle.pack(side="left", padx=12, pady=36)
 
-        btn_verif_cutting = Button(btn_frame, text="Vérifier la possibilité d'une découpe en sous-réseaux", font=("Arial", 20), fg="white", bg="#526787", command=self.open_graphic_interface)
-        btn_verif_cutting.pack(pady=25, fill=X)
+        # zone de contenu
+        content = Frame(card, bg="#f7fafc")
+        content.pack(fill="both", expand=True, padx=30, pady=20)
 
-        btn_close_app = Button(btn_frame, text="Quitter l'application", font=("Arial", 20), fg="white", bg="#526787", command=master.quit)
-        btn_close_app.pack(pady=25, fill=X)
+        # colonne gauche : description + icône
+        left = Frame(content, bg="#f7fafc")
+        left.pack(side="left", fill="y", expand=False)
 
-        btn_frame.place(in_=master, anchor="c", relx=.5, rely=.5)
+        # petite illustration (optionnelle)
+        try:
+            # remplace "network.png" par un chemin réel si tu veux une image
+            img = PhotoImage(file="ressources/logo.ico")
+            icon = Label(left, image=img, bg="#f7fafc")
+            icon.image = img
+            icon.pack(pady=6, padx=6)
+        except Exception:
+            logo = Canvas(left, width=140, height=140, bg="#f7fafc", highlightthickness=0)
+            logo.create_oval(10,10,130,130, fill="#526787", outline="")
+            logo.create_text(70,80, text="NM", fill="white", font=("Segoe UI", 28, "bold"))
+            logo.pack(pady=6, padx=6)
+
+        desc = Label(left, text="Analysez et planifiez vos réseaux\nrapidement et simplement.",
+                        bg="#f7fafc", fg="#333", font=("Segoe UI", 12), justify="left")
+        desc.pack(padx=8, pady=8)
+
+        # colonne droite : boutons
+        right = Frame(content, bg="#f7fafc")
+        right.pack(side="right", fill="both", expand=True)
+
+        # style bouton helper
+        def make_btn(parent, text, command=None, accent=False):
+            bg = "#526787" if not accent else "#2b6cb0"
+            hover = "#435f78" if not accent else "#235a91"
+            btn_container = Frame(parent, bg=bg, height=72)
+            btn_container.pack(fill="x", pady=12)
+            btn_container.pack_propagate(False)
+
+            btn = Button(btn_container, text=text, bg=bg, fg="white",
+                            font=("Segoe UI", 16), bd=0, activebackground=hover,
+                            activeforeground="white", cursor="hand2", command=command)
+            btn.pack(fill="both", expand=True, padx=6, pady=6)
+
+            # effet hover
+            def on_enter(e):
+                btn.config(bg=hover)
+                btn_container.config(bg=hover)
+            def on_leave(e):
+                btn.config(bg=bg)
+                btn_container.config(bg=bg)
+            btn.bind("<Enter>", on_enter)
+            btn.bind("<Leave>", on_leave)
+
+            return btn
+
+        make_btn(right, "Calculer les caractéristiques réseaux de votre machine", command=self.open_network_utils_interface)
+        make_btn(right, "Vérifier la possibilité d'une découpe en sous-réseaux", command=self.open_graphic_interface)
+        make_btn(right, "Consulter les données sauvegardées", command=self.open_load_data_interface)
+        make_btn(right, "Quitter l'application", command=master.quit)
+
+    def open_load_data_interface(self):
+        from load_data_interface import LoadedDecoupe
+
+        self.master.withdraw()
+        new_window = Toplevel(self.master)
+        LoadedDecoupe(new_window)
+
+    def open_network_utils_interface(self):
+        from network_utils_interface import NetworkUtilsInterface
+
+        self.master.withdraw()
+        new_window = Toplevel(self.master)
+        NetworkUtilsInterface(new_window,self.user_id)
 
     def open_graphic_interface(self):
         # import local de la classe pour éviter

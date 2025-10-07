@@ -1,37 +1,61 @@
 from tkinter import *
 
 from db_utils import *
+from load_data_interface import LoadedDecoupe
+
 
 class RegisterInterface:
     def __init__(self,master):
         self.master = master
-        self.master.title("Register")
+        self.master.title("S'inscrire")
         self.master.geometry("1080x720")
         self.master.resizable(False, False)
-        self.master.configure(background="#989a9e")
+        self.master.configure(background="#121212")
 
-        label_title = Label(self.master, text="S'inscrire", font="arial 30 bold", fg="white", bg="#989a9e")
-        label_title.pack(side=TOP, pady=50)
+        # Card central
+        card = Frame(master, bg="#f7fafc")
+        card.place(relx=0.5, rely=0.5, anchor="center", width=760, height=480)
 
-        register_form_frame = Frame(self.master, bg="#989a9e", padx=10, pady=6)
+        # Header
+        header = Frame(card, bg="#526787", height=100)
+        header.pack(fill="x")
+        header.pack_propagate(False)
+        Label(header, text="S'inscrire", bg="#526787", fg="white",
+              font=("Segoe UI", 26, "bold")).pack(side="left", padx=20)
+        Label(header, text="Accédez à Network Manager", bg="#526787", fg="#e6eef8",
+              font=("Segoe UI", 11)).pack(side="left", padx=12, pady=34)
 
-        label_user_name = Label(register_form_frame, text="Nom d'utilisateur : ",font= "arial 20", fg="white", bg="#989a9e")
-        label_user_name.grid(row=0, column=0, sticky=E)
+        # Formulaire
+        form = Frame(card, bg="#f7fafc")
+        form.pack(expand=True)
 
-        self.user_name_entry = Entry(register_form_frame, font=("arial",20), background="#296ec2", foreground="white")
-        self.user_name_entry.grid(row=0, column=1, pady=100)
+        lbl_user = Label(form, text="Nom d'utilisateur", bg="#f7fafc", fg="#222", font=("Segoe UI", 14))
+        lbl_user.grid(row=0, column=0, sticky="e", padx=(0, 12), pady=(8, 12))
+        self.user_name_entry = Entry(form, font=("Segoe UI", 14), width=28, bd=1, relief="solid")
+        self.user_name_entry.grid(row=0, column=1, pady=(8, 12))
 
-        label_password = Label(register_form_frame, text="Mot de passe : ", font="arial 20", fg="white", bg="#989a9e")
-        label_password.grid(row=1, column=0, sticky=E)
+        lbl_pwd = Label(form, text="Mot de passe", bg="#f7fafc", fg="#222", font=("Segoe UI", 14))
+        lbl_pwd.grid(row=1, column=0, sticky="e", padx=(0, 12), pady=(0, 12))
+        self.password_entry = Entry(form, show="*", font=("Segoe UI", 14), width=28, bd=1, relief="solid")
+        self.password_entry.grid(row=1, column=1, pady=(0, 12))
 
-        self.password_entry = Entry(register_form_frame,show="*", font=("arial",20), background="#296ec2", foreground="white")
-        self.password_entry.grid(row=1, column=1)
+        # Message d'erreur / info
+        self.msg_label = Label(form, text="", bg="#f7fafc", fg="#b00020", font=("Segoe UI", 11))
+        self.msg_label.grid(row=2, column=0, columnspan=2, pady=(4, 8))
 
-        btn_confirm_register = Button(master, text="Confirmer l'inscription", font="arial, 20", command=self.register)
-        btn_confirm_register.pack(side=BOTTOM, pady=50)
+        # Boutons
+        btn_frame = Frame(card, bg="#f7fafc")
+        btn_frame.pack(fill="x", padx=20, pady=(0, 20))
 
+        register_btn = Button(btn_frame, text="S'inscrire", bg="#2b6cb0", fg="white",
+                              font=("Segoe UI", 13, "bold"), bd=0, padx=20, pady=10,
+                              command=self.register)
+        register_btn.pack(side="left", padx=(0, 12))
 
-        register_form_frame.pack()
+        login_btn = Button(btn_frame, text="Se connecter", bg="#2b6cb0", fg="white",
+                           font=("Segoe UI", 13, "bold"), bd=0, padx=20, pady=10,
+                           command=self.open_login_interface)
+        login_btn.pack(side="left", padx=(0, 12))
 
 
     def clear_form(self):
@@ -51,6 +75,13 @@ class RegisterInterface:
                 custom_messagebox("Erreur", f"Ce nom d'utilisateur {username} existe déjà.")
         else:
             custom_messagebox("Annulation", "Inscription annulée")
+
+    def open_login_interface(self):
+        from login_interface import LoginInterface
+
+        self.master.withdraw()
+        new_window = Toplevel(self.master)
+        LoginInterface(new_window)
 
 
 def custom_messagebox(title, message):
@@ -102,11 +133,3 @@ def askyesno(title, message):
     win.wait_window()
 
     return result["value"]
-
-def main():
-    root = Tk()
-    register_interface = RegisterInterface(root)
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()

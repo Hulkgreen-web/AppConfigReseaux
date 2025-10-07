@@ -5,93 +5,110 @@ from subnet import generer_plan_adressage_classique
 from db_utils import add_decoupe
 
 class SubnetCalculatorApp:
-    def __init__(self, master,ip_address,masque,nb_sr,user_id):
+    def __init__(self, master, ip_address="", masque="", nb_sr=0, user_id=0):
         self.master = master
         self.ip_address = ip_address
         self.masque = masque
         self.nb_sr = nb_sr
         self.user_id = user_id
+
         master.title("Calculateur de Sous-Réseaux")
         master.geometry("1250x720")
         master.resizable(False, False)
-        master.configure(background="#7529c2")
+        master.configure(bg="#121212")  # fond sombre moderne
 
-        frame_style = ttk.Style()
-        frame_style.configure("TFrame", background="#7529c2")
+        # Card central
+        card = tk.Frame(master, bg="#f8fafc", bd=0)
+        card.place(relx=0.5, rely=0.5, anchor="center", width=1180, height=660)
 
-        button_style = ttk.Style()
-        button_style.configure("TButton", bg="#296ec2", font=("Arial", 15))
+        # Header
+        header = tk.Frame(card, bg="#5a3bd6", height=90)
+        header.pack(fill="x")
+        header.pack_propagate(False)
+        tk.Label(header, text="Calculateur de Sous-Réseaux", bg="#5a3bd6", fg="white",
+                 font=("Segoe UI", 24, "bold")).pack(side="left", padx=20)
+        tk.Label(header, text="Génère les sous-réseaux et leurs plages IP", bg="#5a3bd6",
+                 fg="#e7e7ff", font=("Segoe UI", 11)).pack(side="left", padx=12, pady=28)
 
-        # Frame pour les entrées
-        input_frame = ttk.Frame(master, style="TFrame", padding="10")
-        input_frame.pack(fill=tk.X)
+        # Input frame
+        input_frame = tk.Frame(card, bg="#f8fafc")
+        input_frame.pack(fill="x", padx=20, pady=(16, 8))
 
-        # Icone de l'application
-        master.iconbitmap("ressources/logo.ico")
-
-        # Adresse IP
-        ttk.Label(input_frame, text="Adresse IP:", font=("arial",15),background="#296ec2", foreground="white").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        self.ip_entry = ttk.Entry(input_frame, width=20, font=("arial", 15))
-        self.ip_entry.grid(row=0, column=1, padx=5, pady=5)
+        lbl_ip = tk.Label(input_frame, text="Adresse IP:", bg="#f8fafc", fg="#222", font=("Segoe UI", 14))
+        lbl_ip.grid(row=0, column=0, sticky="w")
+        self.ip_entry = tk.Entry(input_frame, font=("Segoe UI", 14), width=18, justify="center", bd=1, relief="solid")
+        self.ip_entry.grid(row=0, column=1, padx=8)
         self.ip_entry.insert(0, self.ip_address)
-        self.ip_entry.configure(state="disabled")
+        self.ip_entry.config(state="disabled")
 
-        # Masque
-        ttk.Label(input_frame, text="Masque:", font=("arial",15),background="#296ec2", foreground="white").grid(row=0, column=2, sticky=tk.W, padx=5, pady=5)
-        self.masque_entry = ttk.Entry(input_frame, width=20, font=("arial", 15))
-        self.masque_entry.grid(row=0, column=3, padx=5, pady=5)
+        lbl_mask = tk.Label(input_frame, text="Masque:", bg="#f8fafc", fg="#222", font=("Segoe UI", 14))
+        lbl_mask.grid(row=0, column=2, sticky="w", padx=(20,0))
+        self.masque_entry = tk.Entry(input_frame, font=("Segoe UI", 14), width=14, justify="center", bd=1, relief="solid")
+        self.masque_entry.grid(row=0, column=3, padx=8)
         self.masque_entry.insert(0, self.masque)
-        self.masque_entry.configure(state="disabled")
+        self.masque_entry.config(state="disabled")
 
-        # Nombre de sous-réseaux
-        ttk.Label(input_frame, text="Nombre de Sous-Réseaux:", font=("arial",15),background="#296ec2", foreground="white").grid(row=0, column=4, sticky=tk.W, padx=5, pady=5)
-        self.sr_entry = ttk.Entry(input_frame, width=10, font=("arial", 15))
-        self.sr_entry.grid(row=0, column=5, padx=5, pady=5)
-        self.sr_entry.insert(0, self.nb_sr)
-        self.sr_entry.configure(state="disabled")
+        lbl_nb = tk.Label(input_frame, text="Nombre de SR:", bg="#f8fafc", fg="#222", font=("Segoe UI", 14))
+        lbl_nb.grid(row=0, column=4, sticky="w", padx=(20,0))
+        self.sr_entry = tk.Entry(input_frame, font=("Segoe UI", 14), width=8, justify="center", bd=1, relief="solid")
+        self.sr_entry.grid(row=0, column=5, padx=8)
+        self.sr_entry.insert(0, str(self.nb_sr))
+        self.sr_entry.config(state="disabled")
 
-        # Bouton de calcul
-        ttk.Button(input_frame, text="Calculer", command=self.calculer_sous_reseaux).grid(row=0, column=6, padx=5,
-                                                                                          pady=5)
+        calc_btn = tk.Button(input_frame, text="Calculer", bg="#2b6cb0", fg="white", font=("Segoe UI", 13),
+                             activebackground="#235a91", padx=16, pady=8, command=self.calculer_sous_reseaux)
+        calc_btn.grid(row=0, column=6, padx=(30,0))
 
-        style = ttk.Style()
-        style.configure("Custom.Treeview",
-                        background='#296ec2',
-                        foreground='white',
-                        font="arial",
-                        borderwidth=1,
-                        relief='solid',
-                        rowheight=30)
+        # Tableau de résultats (Treeview) avec barre de défilement
+        table_frame = tk.Frame(card, bg="#f8fafc")
+        table_frame.pack(fill="both", expand=True, padx=20, pady=(6, 12))
 
-        style.map("Custom.Treeview",
-                  background=[('selected', '#fcba03')],
-                  foreground=[('selected', 'white')])
+        cols = ("reseau", "masque", "nb", "premiere", "derniere", "broadcast")
 
-        # Tableau pour afficher les résultats
-        self.tree = ttk.Treeview(master,
-                                 style="Custom.Treeview",
-                                 columns=("Réseau", "Masque", "Nb Adresses", "Première IP", "Dernière IP", "Broadcast"),
-                                 show="headings")
+        self.tree = ttk.Treeview(table_frame,columns=cols, show="headings", height=14)
+        headings = {
+            "reseau": "Réseau",
+            "masque": "Masque",
+            "nb": "Nombre d'adresses",
+            "premiere": "Première IP",
+            "derniere": "Dernière IP",
+            "broadcast": "Broadcast"
+        }
+        for c in cols:
+            self.tree.heading(c, text=headings[c])
+            self.tree.column(c, anchor="center", width=180)
 
-        # Définir les en-têtes
-        self.tree.heading("Réseau", text="Réseau")
-        self.tree.heading("Masque", text="Masque")
-        self.tree.heading("Nb Adresses", text="Nombre total d'adresses")
-        self.tree.heading("Première IP", text="Première IP utilisable")
-        self.tree.heading("Dernière IP", text="Dernière IP utilisable")
-        self.tree.heading("Broadcast", text="Adresse de broadcast")
+        vsb = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
+        hsb = ttk.Scrollbar(table_frame, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscroll=vsb.set, xscroll=hsb.set)
 
-        # Configurer la largeur des colonnes
-        for col in self.tree["columns"]:
-            self.tree.column(col, width=200, anchor=tk.CENTER)
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        vsb.grid(row=0, column=1, sticky="ns")
+        hsb.grid(row=1, column=0, sticky="ew")
+        table_frame.rowconfigure(0, weight=1)
+        table_frame.columnconfigure(0, weight=1)
 
-        self.tree.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        # Pied de page avec boutons
+        footer = tk.Frame(card, bg="#f8fafc")
+        footer.pack(fill="x", padx=20, pady=(0,14))
 
-        btn_main_menu = ttk.Button(master, text="Retour au menu principal", command=self.open_main_menu)
-        btn_main_menu.pack(padx=10, pady=10)
+        left_footer = tk.Frame(footer, bg="#f8fafc")
+        left_footer.pack(side="left", anchor="w")
 
-        btn_save_decoupe = ttk.Button(master, text="Sauvegarder" ,command=self.save_on_db)
-        btn_save_decoupe.pack(padx=10, pady=10)
+        info_lbl = tk.Label(left_footer, text=f"Utilisateur #{self.user_id}", bg="#f8fafc", fg="#666", font=("Segoe UI", 10))
+        info_lbl.pack(side="left", padx=(0,12))
+
+        save_btn = tk.Button(footer, text="Sauvegarder", bg="#16a34a", fg="white", font=("Segoe UI", 12),
+                             activebackground="#13803d", padx=12, pady=8, command=self.save_on_db)
+        save_btn.pack(side="right", padx=8)
+
+        menu_btn = tk.Button(footer, text="Retour au menu principal", bg="#6b7280", fg="white", font=("Segoe UI", 12),
+                             activebackground="#4b5563", padx=12, pady=8, command=self.open_main_menu)
+        menu_btn.pack(side="right", padx=8)
+
+        # Exemple de style visuel sur les lignes (alternance)
+        self.tree.tag_configure('oddrow', background='#ffffff')
+        self.tree.tag_configure('evenrow', background='#f1f5f9')
 
     def calculer_sous_reseaux(self):
         # Effacer les résultats précédents

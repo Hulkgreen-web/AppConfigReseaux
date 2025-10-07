@@ -52,8 +52,8 @@ def calculate_network_info(ip_str, mask_str, mode='classless'):
         else:  # classless
             result['subnet'] = f"{str(network.network_address)}/{network.prefixlen}"
         return result
-    except ValueError as e:
-        raise ValueError(e)
+    except ValueError:
+        raise ValueError("L'adresse IP ou le masque est invalide")
 
 
 #Point 2

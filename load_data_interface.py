@@ -11,58 +11,76 @@ class LoadedDecoupe:
         master.title("Visualisation de découpe")
         master.geometry("1250x720")
         master.resizable(False, False)
-        master.configure(background="#989a9e")
+        master.configure(bg="#121212")  # fond sombre
 
-        frame_style = ttk.Style()
-        frame_style.configure("TFrame", background="#989a9e")
+        # Card central
+        card = tk.Frame(master, bg="#f8fafc")
+        card.place(relx=0.5, rely=0.5, anchor="center", width=1180, height=660)
 
-        button_style = ttk.Style()
-        button_style.configure("TButton", bg="#526787", font=("Arial", 15))
+        # Header
+        header = tk.Frame(card, bg="#526787", height=80)
+        header.pack(fill="x")
+        header.pack_propagate(False)
+        tk.Label(header, text="Visualisation de découpe", bg="#526787", fg="white",
+                 font=("Segoe UI", 20, "bold")).pack(side="left", padx=20)
+        tk.Label(header, text=f"Nom: {self.decoupe_name}    |    Utilisateur #{self.user_id}",
+                 bg="#526787", fg="#e6eef8", font=("Segoe UI", 11)).pack(side="left", padx=12, pady=26)
 
-        # Frame pour les entrées
-        input_frame = ttk.Frame(master, style="TFrame", padding="10")
-        input_frame.pack(fill=tk.X)
+        # Top info row
+        info_row = tk.Frame(card, bg="#f8fafc")
+        info_row.pack(fill="x", padx=18, pady=(12, 6))
 
-        # Icone de l'application
-        master.iconbitmap("ressources/logo.ico")
+        tk.Label(info_row, text="Découpe :", bg="#f8fafc", fg="#222", font=("Segoe UI", 12, "bold")).grid(row=0, column=0, sticky="w")
+        tk.Label(info_row, text=self.decoupe_name, bg="#f8fafc", fg="#444", font=("Segoe UI", 12)).grid(row=0, column=1, sticky="w", padx=(6,20))
+        tk.Label(info_row, text="Nombre de sous-réseaux :", bg="#f8fafc", fg="#222", font=("Segoe UI", 12, "bold")).grid(row=0, column=2, sticky="w")
+        self.lbl_count = tk.Label(info_row, text="0", bg="#f8fafc", fg="#444", font=("Segoe UI", 12))
+        self.lbl_count.grid(row=0, column=3, sticky="w", padx=(6,20))
 
-        style = ttk.Style()
-        style.configure("Custom.Treeview",
-                        background='#526787',
-                        foreground='white',
-                        font="arial",
-                        borderwidth=1,
-                        relief='solid',
-                        rowheight=30)
+        # Boutons d'action
+        btns = tk.Frame(info_row, bg="#f8fafc")
+        btns.grid(row=0, column=4, sticky="e")
+        tk.Button(btns, text="Retour", bg="#6b7280", fg="white", bd=0, padx=10, pady=6, command=self.open_main_menu).pack(side="left", padx=6)
 
-        style.map("Custom.Treeview",
-                  background=[('selected', '#989a9e')],
-                  foreground=[('selected', 'white')])
+        # Tableau (Treeview) avec scrollbars
+        table_frame = tk.Frame(card, bg="#f8fafc")
+        table_frame.pack(fill="both", expand=True, padx=18, pady=(6,12))
 
-        # Tableau pour afficher les résultats
-        self.tree = ttk.Treeview(master,
-                                 style="Custom.Treeview",
-                                 columns=("Réseau", "Masque", "Nb Adresses", "Première IP", "Dernière IP", "Broadcast"),
-                                 show="headings")
+        cols = ("reseau", "masque", "nb", "premiere", "derniere", "broadcast")
+        self.tree = ttk.Treeview(table_frame, columns=cols, show="headings", height=18)
+        headings = {
+            "reseau": "Réseau",
+            "masque": "Masque",
+            "nb": "Nombre d'adresses",
+            "premiere": "Première IP",
+            "derniere": "Dernière IP",
+            "broadcast": "Broadcast"
+        }
+        for c in cols:
+            self.tree.heading(c, text=headings[c])
+            self.tree.column(c, anchor="center", width=180, stretch=True)
 
-        # Définir les en-têtes
-        self.tree.heading("Réseau", text="Réseau")
-        self.tree.heading("Masque", text="Masque")
-        self.tree.heading("Nb Adresses", text="Nombre total d'adresses")
-        self.tree.heading("Première IP", text="Première IP utilisable")
-        self.tree.heading("Dernière IP", text="Dernière IP utilisable")
-        self.tree.heading("Broadcast", text="Adresse de broadcast")
+        vsb = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
+        hsb = ttk.Scrollbar(table_frame, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscroll=vsb.set, xscroll=hsb.set)
 
-        # Configurer la largeur des colonnes
-        for col in self.tree["columns"]:
-            self.tree.column(col, width=200, anchor=tk.CENTER)
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        vsb.grid(row=0, column=1, sticky="ns")
+        hsb.grid(row=1, column=0, sticky="ew")
+        table_frame.rowconfigure(0, weight=1)
+        table_frame.columnconfigure(0, weight=1)
 
-        self.tree.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        # Alternance de couleurs pour lisibilité
+        self.tree.tag_configure('oddrow', background='#ffffff')
+        self.tree.tag_configure('evenrow', background='#f1f5f9')
+        self.tree.tag_configure('header', background='#526787', foreground='white')
 
-        '''btn_main_menu = ttk.Button(master, text="Retour au menu principal", command=self.open_main_menu)
-        btn_main_menu.pack(padx=10, pady=10)'''
+        # Footer (statut)
+        footer = tk.Frame(card, bg="#f8fafc")
+        footer.pack(fill="x", padx=18, pady=(0,12))
+        self.status_lbl = tk.Label(footer, text="Prêt", bg="#f8fafc", fg="#666", font=("Segoe UI", 10))
+        self.status_lbl.pack(side="left")
 
-        # Charger les données et les placer dans le tableau
+        # Charger les données initiales
         self.load_from_db()
 
     def load_from_db(self):
@@ -78,6 +96,13 @@ class LoadedDecoupe:
                 details["Dernière IP utilisable"],
                 details["Adresse de broadcast"]
             ))
+    def open_main_menu(self):
+        from menu_principal import MenuPrincipal
+
+        self.master.withdraw()
+        new_window = tk.Toplevel(self.master)
+        MenuPrincipal(new_window,self.user_id)
+
 
 def main():
     root = tk.Tk()
