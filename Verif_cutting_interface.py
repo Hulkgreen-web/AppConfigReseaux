@@ -45,12 +45,12 @@ class VerificateurDecoupe:
         self.var_choix = tk.IntVar(value=1)
         rb1 = ttk.Radiobutton(frame1, text="Nombre de sous-réseaux", variable=self.var_choix, value=1)
         rb1.grid(row=2, column=0, sticky="w", padx=8, pady=8)
-        self.entry_nb_sr = ttk.Entry(frame1)
+        self.entry_nb_sr = ttk.Entry(frame1, font=("Arial", 14))
         self.entry_nb_sr.grid(row=2, column=1, sticky="ew", padx=8, pady=8)
 
         rb2 = ttk.Radiobutton(frame1, text="Nombre d'IPs par SR", variable=self.var_choix, value=2)
         rb2.grid(row=3, column=0, sticky="w", padx=8, pady=8)
-        self.entry_nb_ips = ttk.Entry(frame1)
+        self.entry_nb_ips = ttk.Entry(frame1, font=("Arial", 14))
         self.entry_nb_ips.grid(row=3, column=1, sticky="ew", padx=8, pady=8)
 
         btn_verif = ttk.Button(frame1, text="Vérifier", command=self.calculer_classique)
