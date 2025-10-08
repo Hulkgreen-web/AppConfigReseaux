@@ -3,10 +3,10 @@ from tkinter import ttk
 from db_utils import get_decoupe_by_name
 
 class LoadedDecoupe:
-    def __init__(self, master):
+    def __init__(self, master, user_id, decoupe_name):
         self.master = master
-        self.user_id = 2
-        self.decoupe_name = "decoupe_tri"
+        self.user_id = user_id
+        self.decoupe_name = decoupe_name
 
         master.title("Visualisation de découpe")
         master.geometry("1250x720")
@@ -32,14 +32,11 @@ class LoadedDecoupe:
 
         tk.Label(info_row, text="Découpe :", bg="#f8fafc", fg="#222", font=("Segoe UI", 12, "bold")).grid(row=0, column=0, sticky="w")
         tk.Label(info_row, text=self.decoupe_name, bg="#f8fafc", fg="#444", font=("Segoe UI", 12)).grid(row=0, column=1, sticky="w", padx=(6,20))
-        tk.Label(info_row, text="Nombre de sous-réseaux :", bg="#f8fafc", fg="#222", font=("Segoe UI", 12, "bold")).grid(row=0, column=2, sticky="w")
-        self.lbl_count = tk.Label(info_row, text="0", bg="#f8fafc", fg="#444", font=("Segoe UI", 12))
-        self.lbl_count.grid(row=0, column=3, sticky="w", padx=(6,20))
 
         # Boutons d'action
         btns = tk.Frame(info_row, bg="#f8fafc")
         btns.grid(row=0, column=4, sticky="e")
-        tk.Button(btns, text="Retour", bg="#6b7280", fg="white", bd=0, padx=10, pady=6, command=self.open_main_menu).pack(side="left", padx=6)
+        tk.Button(btns, text="Retour", bg="#6b7280", fg="white", bd=0, padx=10, pady=6, command=self.return_to_last_menu).pack(side="left", padx=6)
 
         # Tableau (Treeview) avec scrollbars
         table_frame = tk.Frame(card, bg="#f8fafc")
@@ -96,18 +93,9 @@ class LoadedDecoupe:
                 details["Dernière IP utilisable"],
                 details["Adresse de broadcast"]
             ))
-    def open_main_menu(self):
-        from menu_principal import MenuPrincipal
+    def return_to_last_menu(self):
+        from select_decoupe import DecoupeSelector
 
         self.master.withdraw()
         new_window = tk.Toplevel(self.master)
-        MenuPrincipal(new_window,self.user_id)
-
-
-def main():
-    root = tk.Tk()
-    app = LoadedDecoupe(root)
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
+        DecoupeSelector(new_window,self.user_id)

@@ -84,15 +84,15 @@ class MenuPrincipal:
 
         make_btn(right, "Calculer les caractéristiques réseaux de votre machine", command=self.open_network_utils_interface)
         make_btn(right, "Vérifier la possibilité d'une découpe en sous-réseaux", command=self.open_graphic_interface)
-        make_btn(right, "Consulter les données sauvegardées", command=self.open_load_data_interface)
+        make_btn(right, "Consulter les données sauvegardées", command=self.open_select_decoupe)
         make_btn(right, "Quitter l'application", command=master.quit)
 
-    def open_load_data_interface(self):
-        from load_data_interface import LoadedDecoupe
+    def open_select_decoupe(self):
+        from select_decoupe import DecoupeSelector
 
         self.master.withdraw()
         new_window = Toplevel(self.master)
-        LoadedDecoupe(new_window)
+        DecoupeSelector(new_window,self.user_id)
 
     def open_network_utils_interface(self):
         from network_utils_interface import NetworkUtilsInterface

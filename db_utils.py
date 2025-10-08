@@ -162,6 +162,18 @@ def get_decoupe_by_name(name):
     finally:
         conn.close()
 
+
+def get_decoupes_by_id(user_id):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT name FROM decoupes WHERE responsible_id = ?", (user_id,))
+        rows = cursor.fetchall()
+        return [row[0] for row in rows]
+    finally:
+        conn.close()
+
+
 # Point d'entrée pour tester les fonctions
 if __name__ == "__main__":
     create_db()
