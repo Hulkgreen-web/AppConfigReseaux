@@ -152,7 +152,7 @@ class SubnetCalculatorApp:
             response = custom_popup_entry("Sauvegarde", "Voulez-vous vraiment sauvegarder cette découpe ?")
 
             if (response is not None):
-                add_decoupe(self.user_id,response,plan)
+                add_decoupe(self.user_id,response,adresse_ip,masque,nombre_sr,plan)
         except ValueError as e:
             messagebox.showerror("Erreur", str(e))
 

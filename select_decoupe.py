@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from db_utils import get_decoupes_by_id
+from db_utils import get_decoupes_by_id, get_info_entered
+
 # Styles
 BG = "#121212"        # fond principal
 CARD_BG = "#f8fafc"   # carte
@@ -127,9 +128,11 @@ class DecoupeSelector:
         self.selected_name_lbl.config(text=name)
         self.status_lbl.config(text=f"Découpe sélectionnée : {name}")
 
+        ip_entered, mask_entered, nb_sr_entered = get_info_entered(self.user_id, name)
+
         self.master.withdraw()
         new_window = tk.Toplevel(self.master)
-        LoadedDecoupe(new_window, self.user_id, name)
+        LoadedDecoupe(new_window, self.user_id, name, ip_entered, mask_entered, nb_sr_entered)
 
     def on_back(self):
         from menu_principal import MenuPrincipal

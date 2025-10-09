@@ -23,41 +23,13 @@ def create_db():
             CREATE TABLE IF NOT EXISTS decoupes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
+                ip_entered TEXT NOT NULL,
+                mask_entered TEXT NOT NULL,
+                nb_sr_entered INTEGER NOT NULL,
                 data TEXT NOT NULL,
                 responsible_id INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (responsible_id) REFERENCES users(id)
-            )
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS network_calculations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                ip_entered TEXT NOT NULL,
-                mask_entered TEXT NOT NULL,
-                mode TEXT NOT NULL CHECK (mode IN ('classless', 'classful')),
-                network_address TEXT NOT NULL,
-                broadcast_address TEXT NOT NULL,
-                subnet_mask TEXT NOT NULL,
-                subnet TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS ip_checks (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                ip_to_check TEXT NOT NULL,
-                network_ip TEXT NOT NULL,
-                mask_str TEXT,
-                mode TEXT NOT NULL CHECK (mode IN ('classless', 'classful')),
-                belongs INTEGER,
-                first_host TEXT,
-                last_host TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id)
             )
         ''')
         conn.commit()
@@ -134,12 +106,13 @@ def add_user(username, password):
     finally:
         conn.close()
 
-def add_decoupe(user_id, name, data : Dict[int, Any]):
+def add_decoupe(user_id, name,ip_entered,mask_entered,nb_sr_entered, data : Dict[int, Any]):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO decoupes (name, data, responsible_id) VALUES (?, ?, ?)",
-                       (name, json.dumps(data, ensure_ascii=False, indent=4), user_id))
+        cursor.execute("INSERT INTO decoupes (name,ip_entered,mask_entered,nb_sr_entered, data, responsible_id) "
+                       "VALUES (?, ?, ?, ?, ?, ?)",
+                       (name,ip_entered,mask_entered,nb_sr_entered, json.dumps(data, ensure_ascii=False, indent=4), user_id))
         conn.commit()
         print(f"Découpe '{name}' ajoutée !")
         return True
@@ -170,6 +143,35 @@ def get_decoupes_by_id(user_id):
         cursor.execute("SELECT name FROM decoupes WHERE responsible_id = ?", (user_id,))
         rows = cursor.fetchall()
         return [row[0] for row in rows]
+    finally:
+        conn.close()
+
+def get_info_entered(responsible_id, name):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT ip_entered, mask_entered, nb_sr_entered FROM decoupes WHERE responsible_id = ?"
+                       " AND name = ?", (responsible_id, name))
+        row = cursor.fetchone()
+        return tuple(row) if row else None
+    finally:
+        conn.close()
+
+
+def update_decoupe(responsible_id, name,ip_entered,mask_entered,nb_sr_entered, data):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE decoupes SET ip_entered = ?, mask_entered = ?, nb_sr_entered = ?, data = ?"
+            "WHERE name = ? AND responsible_id = ?",
+            (ip_entered, mask_entered, nb_sr_entered,json.dumps(data,ensure_ascii=False,indent=4),
+             name, responsible_id))
+        conn.commit()
+        print(f"Modification de la découpe '{name}' effectuée avec succès !")
+        return True
+    except sqlite3.IntegrityError:
+        print(f"Erreur, une donnée est erronée")
+        return False
     finally:
         conn.close()
 
