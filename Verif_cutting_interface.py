@@ -70,12 +70,16 @@ class VerificateurDecoupe:
         self.entry_masque_vlsm = ttk.Entry(frame2, font=("Arial", 14))
         self.entry_masque_vlsm.grid(row=1, column=1, sticky="ew", padx=8, pady=8)
 
-        ttk.Label(frame2, text="Besoins en IPs par SR (ex: 50,20,10) :").grid(row=2, column=0, sticky="e", padx=8, pady=8)
+        ttk.Label(frame2, text="Nombre de sous-réseaux souhaité").grid(row=2, column=0, sticky="e", padx=8, pady=8)
+        self.entry_nb_sr_vlsm = ttk.Entry(frame2, font=("Arial", 14))
+        self.entry_nb_sr_vlsm.grid(row=2, column=1, sticky="ew", padx=8, pady=8)
+
+        ttk.Label(frame2, text="Besoins en IPs par SR (ex: 50,20,10) :").grid(row=3, column=0, sticky="e", padx=8, pady=8)
         self.entry_besoins = ttk.Entry(frame2, font=("Arial", 14))
-        self.entry_besoins.grid(row=2, column=1, sticky="ew", padx=8, pady=8)
+        self.entry_besoins.grid(row=3, column=1, sticky="ew", padx=8, pady=8)
 
         btn_vlsm = ttk.Button(frame2, text="Vérifier VLSM", command=self.calculer_vlsm)
-        btn_vlsm.grid(row=3, column=0, columnspan=2, pady=12, ipadx=10)
+        btn_vlsm.grid(row=4, column=0, columnspan=2, pady=12, ipadx=10)
 
         # --- Boutons bas ---
         bottom_frame = ttk.Frame(master, padding=10)
@@ -124,6 +128,7 @@ class VerificateurDecoupe:
     def calculer_vlsm(self):
         ip = self.entry_ip_vlsm.get()
         masque = self.entry_masque_vlsm.get()
+        nb_sr = self.entry_nb_sr_vlsm.get()
         besoins_str = self.entry_besoins.get()
         try:
             besoins = [int(x) for x in besoins_str.split(",")]
@@ -132,9 +137,14 @@ class VerificateurDecoupe:
             return
         ok, msg = verifier_vlsm_possible(ip, masque, besoins)
         if ok:
-            messagebox.showinfo("Résultat", msg)
+            custom_messagebox("Résultat", msg)
+            response = askyesno("Proposition de découpe","Voulez-vous effectuer la découpe VLSM ?")
+            if response:
+                self.open_vlsm_cutting_interface(ip, masque,nb_sr,besoins)
+            else:
+                custom_messagebox("Annulation de découpe","Découpe VLSM annulée")
         else:
-            messagebox.showerror("Erreur", msg)
+            custom_messagebox("Erreur", msg)
 
     def open_main_menu(self):
         from menu_principal import MenuPrincipal
@@ -151,3 +161,10 @@ class VerificateurDecoupe:
         self.master.withdraw()
         new_window = tk.Toplevel(self.master)
         SubnetCalculatorApp(new_window,ip_address,masque,nb_sr,self.user_id)
+
+    def open_vlsm_cutting_interface(self,ip_address,masque,nb_sr,nb_ip_needed):
+        from vlsm_cutting_interface import VlsmCuttingInterface
+
+        self.master.withdraw()
+        new_window = tk.Toplevel(self.master)
+        VlsmCuttingInterface(new_window,ip_address,masque,nb_sr,nb_ip_needed,self.user_id)

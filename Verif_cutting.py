@@ -3,6 +3,7 @@ from ttkthemes import ThemedTk
 from tkinter import ttk, messagebox
 import math
 import ipaddress
+from subnet import analyse_adresse_ip,is_masque_valide
 
 # --- Fonctions de calcul ---
 def nb_bits_necessaires(valeur):
@@ -11,6 +12,21 @@ def nb_bits_necessaires(valeur):
 def verifier_decoupe_classique(ip_reseau, masque, nb_sr=None, nb_ips_par_sr=None):
     try:
         reseau = ipaddress.IPv4Network(f"{ip_reseau}/{masque}", strict=False)
+        analyse_ip = analyse_adresse_ip(ip_reseau, masque)
+
+        if not analyse_ip["valide"]:
+            raise ValueError(f"Adresse IP invalide: {ip_reseau}")
+
+        if analyse_ip["type"] in ["Loopback", "Multicast"]:
+            raise ValueError(f"Impossible de découper une adresse de type {analyse_ip['type']}")
+
+        valide_masque = is_masque_valide(masque)
+        if not valide_masque:
+            raise ValueError("Masque valide")
+
+        if not analyse_ip.get("reseau_valide", False):
+            raise ValueError(
+                f"Adresse IP invalide: {ip_reseau}, L'adresse n'est pas une adresse de réseau valide avec ce masque")
     except Exception:
         return False, "Erreur : IP ou masque invalide."
 

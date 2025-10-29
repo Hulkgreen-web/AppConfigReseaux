@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, Label
-
+from register_interface import custom_messagebox
 from subnet import generer_plan_adressage_classique
 from db_utils import add_decoupe
 
@@ -136,10 +136,10 @@ class SubnetCalculatorApp:
                 ))
 
         except ValueError as e:
-            messagebox.showerror("Erreur", str(e))
+            custom_messagebox("Erreur", str(e))
 
         except Exception as e:
-            messagebox.showerror("Erreur", f"Une erreur est survenue : {str(e)}")
+            custom_messagebox("Erreur", f"Une erreur est survenue : {str(e)}")
 
     def save_on_db(self):
         try:
@@ -151,10 +151,11 @@ class SubnetCalculatorApp:
 
             response = custom_popup_entry("Sauvegarde", "Voulez-vous vraiment sauvegarder cette découpe ?")
 
-            if (response is not None):
+            if response is not None:
                 add_decoupe(self.user_id,response,adresse_ip,masque,nombre_sr,plan)
+                custom_messagebox("Succès","Votre découpe a été sauvegardée avec succès")
         except ValueError as e:
-            messagebox.showerror("Erreur", str(e))
+            custom_messagebox("Erreur", str(e))
 
 
     def open_main_menu(self):

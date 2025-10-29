@@ -1,6 +1,137 @@
 import ipaddress
 import math
 
+def is_ip_valide(adresse_ip):
+    try:
+        # vérification du format de l'adresse IP
+        octets = adresse_ip.split(".")
+        if len(octets) != 4:
+            return False
+
+        # Vérification que chaque octet est un nombre et est entre 0 et 255
+        for octet in octets:
+            if not octet.isdigit():
+                return False
+            v = int(octet)
+            if v < 0 or v > 255:
+                return False
+
+            # Utilisation de la méthode IPv4Address pour une vérification supplémentaire
+            ipaddress.IPv4Address(adresse_ip)
+            return True
+    except (ValueError, AttributeError, TypeError):
+        return False
+
+
+def is_adresse_reseau_valide(adresse_ip, masque_pointee):
+    """
+    Vérifie si l'adresse IP est une adresse de réseau valide avec le masque donné
+
+    :param adresse_ip: Adresse IP à vérifier
+    :param masque_pointee: Masque réseau
+    :return: Tuple (bool, str) indiquant si valide et message d'erreur le cas échéant
+    """
+    try:
+        # Convertir le masque en CIDR
+        masque_cidr = masque_pointee_to_cidr(masque_pointee)
+
+        # Créer le réseau
+        reseau = ipaddress.IPv4Network(f"{adresse_ip}/{masque_cidr}", strict=True)
+
+        # Vérifier si l'adresse IP correspond à l'adresse réseau
+        if str(reseau.network_address) != adresse_ip:
+            return False, f"L'adresse {adresse_ip} n'est pas une adresse de réseau valide avec le masque {masque_pointee}. L'adresse réseau devrait être {reseau.network_address}"
+
+        return True, "Adresse de réseau valide"
+
+    except ValueError as e:
+        return False, f"Adresse réseau invalide: {str(e)}"
+
+
+def analyse_adresse_ip(adresse_ip, masque_pointee=None):
+    """
+    Analyse complète d'une adresse IP et retourne des informations détaillées
+
+    :param adresse_ip: Adresse IP à analyser
+    :param masque_pointee: Masque réseau optionnel pour l'analyse
+    :return: Dictionnaire avec l'analyse complète
+    """
+    analyse = {
+        "adresse_ip": adresse_ip,
+        "valide": False,
+        "type": "Inconnu",
+        "classe": "Inconnue",
+        "reseau_prive": False,
+        "message_erreur": "",
+        "details": {}
+    }
+
+    # Validation basique de l'adresse IP
+    valide = is_ip_valide(adresse_ip)
+    if not valide:
+        return analyse
+
+    analyse["valide"] = True
+
+    try:
+        ip_obj = ipaddress.IPv4Address(adresse_ip)
+
+        # Déterminer la classe de l'adresse IP
+        premier_octet = int(adresse_ip.split('.')[0])
+        if 1 <= premier_octet <= 126:
+            analyse["classe"] = "A"
+        elif 128 <= premier_octet <= 191:
+            analyse["classe"] = "B"
+        elif 192 <= premier_octet <= 223:
+            analyse["classe"] = "C"
+        elif 224 <= premier_octet <= 239:
+            analyse["classe"] = "D (Multicast)"
+        elif 240 <= premier_octet <= 255:
+            analyse["classe"] = "E (Réservée)"
+
+        # Déterminer le type d'adresse
+        if ip_obj.is_private:
+            analyse["type"] = "Privée"
+            analyse["reseau_prive"] = True
+        elif ip_obj.is_loopback:
+            analyse["type"] = "Loopback"
+        elif ip_obj.is_multicast:
+            analyse["type"] = "Multicast"
+        elif ip_obj.is_global:
+            analyse["type"] = "Publique"
+        elif ip_obj.is_reserved:
+            analyse["type"] = "Réservée"
+        elif ip_obj.is_unspecified:
+            analyse["type"] = "Non spécifiée"
+        elif ip_obj.is_link_local:
+            analyse["type"] = "Link-local"
+
+        # Analyse avec masque si fourni
+        if masque_pointee:
+            valide_reseau, message_reseau = is_adresse_reseau_valide(adresse_ip, masque_pointee)
+            analyse["reseau_valide"] = valide_reseau
+            analyse["message_reseau"] = message_reseau
+
+            if valide_reseau:
+                masque_cidr = masque_pointee_to_cidr(masque_pointee)
+                reseau = ipaddress.IPv4Network(f"{adresse_ip}/{masque_cidr}", strict=True)
+
+                analyse["details"].update({
+                    "adresse_reseau": str(reseau.network_address),
+                    "masque_cidr": masque_cidr,
+                    "plage_hotes": f"{reseau.num_addresses - 2}",
+                    "premiere_ip": str(reseau[1]),
+                    "derniere_ip": str(reseau[-2]),
+                    "broadcast": str(reseau.broadcast_address)
+                })
+
+        return analyse
+
+    except Exception as e:
+        analyse["valide"] = False
+        analyse["message_erreur"] = f"Erreur lors de l'analyse: {str(e)}"
+        return analyse
+
 def is_masque_valide(masque):
     try:
         # Découpe du masque en octets
@@ -61,6 +192,21 @@ def decoupage_classique(adresse_ip, masque_pointee, nombre_sr):
     :param masque_pointee: Masque de réseau (notation pointée)
     :param nombre_sr: Nombre de sous-réseaux souhaités
     """
+
+    analyse_ip = analyse_adresse_ip(adresse_ip,masque_pointee)
+
+    if not analyse_ip["valide"]:
+        raise ValueError(f"Adresse IP invalide: {adresse_ip}")
+
+    if analyse_ip["type"] in ["Loopback", "Multicast"]:
+        raise ValueError(f"Impossible de découper une adresse de type {analyse_ip['type']}")
+
+    valide_masque = is_masque_valide(masque_pointee)
+    if not valide_masque:
+        raise ValueError("Masque valide")
+
+    if not analyse_ip.get("reseau_valide", False):
+        raise ValueError(f"Adresse IP invalide: {adresse_ip}, L'adresse n'est pas une adresse de réseau valide avec ce masque")
 
     # Convertir le masque pointée en notation CIDR
     masque_cidr = masque_pointee_to_cidr(masque_pointee)
