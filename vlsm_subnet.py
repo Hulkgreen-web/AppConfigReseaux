@@ -75,7 +75,7 @@ class VLSMSimple:
             total_needed = required_ips + 2
             host_bits = math.ceil(math.log2(total_needed))
             new_cidr = 32 - host_bits
-            block_size = 2 ** host_bits - 2
+            block_size = 2 ** host_bits
 
             network_ip = current_ip
             network_int = self.ip_to_int(network_ip)

@@ -171,7 +171,7 @@ class VlsmCuttingInterface:
 
         for i, subnet in enumerate(results):
             tag = 'evenrow' if i % 2 else 'oddrow'
-            total_block = subnet.get('taille_bloc', (subnet.get('ips_utilisables', 0)))
+            total_block = subnet.get('ips_utilisables', 0)
             self.tree.insert("", "end", values=(
                 f"{subnet['reseau']}/{subnet['cidr']}",
                 subnet['masque'],
