@@ -67,6 +67,9 @@ class NetworkUtilsInterface:
                               activebackground="#435f78", padx=12, pady=8, command=self.on_check)
         btn_check.pack(side="left", padx=8)
 
+        tk.Button(btn_frame, text="Retour au menu principal", command=self.return_to_main_menu, bg="#f7fafc", fg="#666",
+                  font=("Segoe UI", 13)).pack(side="left", padx=12, pady=8)
+
         # IP à tester
         test_row = tk.Frame(content, bg="#f7fafc")
         test_row.pack(fill="x", pady=(0,12))
@@ -155,3 +158,10 @@ class NetworkUtilsInterface:
         self.txt_results.configure(state='normal')
         self.txt_results.delete("1.0", END)
         self.txt_results.configure(state='disabled')
+
+    def return_to_main_menu(self):
+        from menu_principal import MenuPrincipal
+        self.master.withdraw()
+        new_window = tk.Toplevel(self.master)
+        MenuPrincipal(new_window,self.user_id)
+
